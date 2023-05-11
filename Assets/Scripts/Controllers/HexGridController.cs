@@ -3,12 +3,18 @@ using System.Collections.Generic;
 
 public class HexGridController : MonoBehaviour
 {
-    public GameObject hexPrefab; // Assign a hex-shaped prefab in the Unity Inspector
-    public float hexSize = 1f; // The size of a single hexagon, modify as needed
+    // public GameObject hexPrefab; // Assign a hex-shaped prefab in the Unity Inspector
+    // public float hexSize = 1f; // The size of a single hexagon, modify as needed
+
+    public HexCellFactory hexCellFactory;
+    public int gridSize;
 
     private Dictionary<Vector3Int, HexCell> hexCells;
 
-    // GenerateGrid Default Method
+    // Expose the hexCells dictionary to other classes
+    public Dictionary<Vector3Int, HexCell> HexCells { get { return hexCells; } }
+
+    // Create Main Grid
     public void GenerateGrid(int gridSize, float initialElevation)
     {
         hexCells = new Dictionary<Vector3Int, HexCell>();
@@ -17,43 +23,52 @@ public class HexGridController : MonoBehaviour
         {
             for (int r = Mathf.Max(-gridSize, -q - gridSize); r <= Mathf.Min(gridSize, -q + gridSize); r++)
             {
-                GenerateHexCell(q, r, initialElevation);
+                HexCell hexCell = hexCellFactory.CreateHexCell(q, r, initialElevation);
+                hexCells.Add(hexCell.CubeCoordinates, hexCell);
             }
         }
     }
 
-    // GenerateGrid with Satellites
-    public void GenerateGrid(int gridSize, float initialElevation, int numberOfSatellites, int satelliteSize)
-    {
-        hexCells = new Dictionary<Vector3Int, HexCell>();
+    // private void GenerateHexCell(int q, int r, float elevation)
+    // {
+    //     // Calculate the world position for the hex cell
+    //     Vector3 position = GetWorldPosition(q, r, hexSize);
 
-        for (int q = -gridSize; q <= gridSize; q++)
+    //     // Create a new HexCell with the cube coordinates and elevation from the noise function
+    //     Vector3Int cubeCoordinates = new Vector3Int(q, r, -q - r);
+    //     HexCell hexCell = new HexCell(cubeCoordinates, elevation);
+
+    //     // Instantiate the hex-shaped prefab and position it according to the calculated position
+    //     Vector3 finalPosition = position + Vector3.up * hexCell.Elevation;
+    //     GameObject hexInstance = Instantiate(hexPrefab, finalPosition, Quaternion.identity, this.transform);
+    //     hexInstance.name = $"Hex({q}, {r}, {-q - r})";
+    //     hexInstance.GetComponent<MeshRenderer>().material.SetFloat("_Elevation", hexCell.Elevation);
+
+    //     // Set the AssociatedGameObject of the HexCell
+    //     hexCell.SetAssociatedGameObject(hexInstance);
+
+    //     // Store the HexCell in the hexCells dictionary
+    //     hexCells.Add(cubeCoordinates, hexCell);
+    // }
+
+
+    public List<HexCoordinates> GetHexesInRange(HexCoordinates center, int range)
+    {
+        var results = new List<HexCoordinates>();
+
+        for (int q = -range; q <= range; q++)
         {
-            for (int r = Mathf.Max(-gridSize, -q - gridSize); r <= Mathf.Min(gridSize, -q + gridSize); r++)
+            int r1 = Mathf.Max(-range, -q - range);
+            int r2 = Mathf.Min(range, -q + range);
+            for (int r = r1; r <= r2; r++)
             {
-                GenerateHexCell(q, r, initialElevation);
+                results.Add(center.Add(new HexCoordinates(q, r, -q - r)));
             }
         }
+
+        return results;
     }
 
-    private void GenerateHexCell(int q, int r, float elevation)
-    {
-        // Calculate the world position for the hex cell
-        Vector3 position = GetWorldPosition(q, r, hexSize);
-
-        // Create a new HexCell with the cube coordinates and elevation from the noise function
-        Vector3Int cubeCoordinates = new Vector3Int(q, r, -q - r);
-        HexCell hexCell = new HexCell(cubeCoordinates, elevation, Biome.Water);
-
-        // Instantiate the hex-shaped prefab and position it according to the calculated position
-        Vector3 finalPosition = position + Vector3.up * hexCell.Elevation;
-        GameObject hexInstance = Instantiate(hexPrefab, finalPosition, Quaternion.identity, this.transform);
-        hexInstance.name = $"Hex({q}, {r}, {-q - r})";
-        hexInstance.GetComponent<MeshRenderer>().material.SetFloat("_Elevation", hexCell.Elevation);
-
-        // Store the HexCell in the hexCells dictionary
-        hexCells.Add(cubeCoordinates, hexCell);
-    }
 
     private Vector3 GetWorldPosition(int q, int r, float hexSize)
     {
@@ -65,20 +80,21 @@ public class HexGridController : MonoBehaviour
 
     public void ClearGrid()
     {
-        // Collect all child objects (hex instances) in a list
-        List<GameObject> children = new List<GameObject>();
-        foreach (Transform child in transform)
+        // Collect all hex instances in a list
+        List<GameObject> hexInstances = new List<GameObject>();
+        foreach (HexCell hexCell in hexCells.Values)
         {
-            children.Add(child.gameObject);
+            hexInstances.Add(hexCell.AssociatedGameObject);
         }
 
-        // Destroy the collected child objects
-        foreach (GameObject child in children)
+        // Destroy the collected hex instances
+        foreach (GameObject hexInstance in hexInstances)
         {
-            DestroyImmediate(child);
+            DestroyImmediate(hexInstance);
         }
 
         // Clear the hexCells dictionary
         hexCells.Clear();
     }
+
 }

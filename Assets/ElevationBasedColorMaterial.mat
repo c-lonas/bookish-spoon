@@ -105,6 +105,7 @@ Material:
     - _Color3: {r: 0, g: 1, b: 0, a: 1}
     - _Color4: {r: 0.5, g: 0.5, b: 0.5, a: 1}
     - _Color5: {r: 1, g: 1, b: 1, a: 1}
+    - _Color6: {r: 0, g: 0, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _Grass: {r: 0, g: 0, b: 0, a: 0}
     - _Rock: {r: 0.25471696, g: 0.26684627, b: 0.33962256, a: 0}

@@ -6,22 +6,18 @@ public class HexCell
 {
     public Vector3Int CubeCoordinates { get; private set; }
     public float Elevation { get; set; }
-    public Biome Biome { get; set; }
+    public GameObject AssociatedGameObject { get; private set; }
 
-    public HexCell(Vector3Int cubeCoordinates, float elevation, Biome biome)
+    public HexCell(Vector3Int cubeCoordinates, float elevation)
     {
         CubeCoordinates = cubeCoordinates;
         Elevation = elevation;
-        Biome = biome;
     }
-}
 
-public enum Biome
-{
-    Water,
-    Sand,
-    Grassland,
-    Forest,
-    // Add more biomes as needed
+
+    public void SetAssociatedGameObject(GameObject gameObject)
+    {
+        AssociatedGameObject = gameObject;
+    }
 }
 
