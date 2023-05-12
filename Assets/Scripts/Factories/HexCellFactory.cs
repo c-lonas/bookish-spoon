@@ -16,12 +16,14 @@ public class HexCellFactory : MonoBehaviour
 
         GameObject hexInstance = Instantiate(hexPrefab, finalPosition, Quaternion.identity, this.transform);
         hexInstance.name = $"Hex({q}, {r}, {-q - r})";
-        hexInstance.GetComponent<MeshRenderer>().material.SetFloat("_Elevation", hexCell.Elevation);
+        hexInstance.GetComponent<MeshRenderer>().sharedMaterial.SetFloat("_Elevation", hexCell.Elevation);
 
         hexCell.SetAssociatedGameObject(hexInstance);
-
+        hexInstance.AddComponent<hex_tile>();
         HexCellComponent hexCellComponent = hexInstance.AddComponent<HexCellComponent>();
         hexCellComponent.HexCell = hexCell;
+        
+
 
         return hexCell;
     }
